@@ -29,7 +29,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	waBinary "go.mau.fi/whatsmeow/binary"
-	"go.mau.fi/whatsmeow/proto/waBotMetadata"
+	"go.mau.fi/whatsmeow/proto/waAICommon"
 	"go.mau.fi/whatsmeow/proto/waCommon"
 	"go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/types"
@@ -238,7 +238,7 @@ func (cli *Client) SendMessage(ctx context.Context, to types.JID, message *waE2E
 
 	if isBotMode {
 		if message.MessageContextInfo.BotMetadata == nil {
-			message.MessageContextInfo.BotMetadata = &waBotMetadata.BotMetadata{
+			message.MessageContextInfo.BotMetadata = &waAICommon.BotMetadata{
 				PersonaID: proto.String("867051314767696$760019659443059"),
 			}
 		}
@@ -582,6 +582,9 @@ func ParseDisappearingTimerString(val string) (time.Duration, bool) {
 func (cli *Client) SetDisappearingTimer(chat types.JID, timer time.Duration, settingTS time.Time) (err error) {
 	switch chat.Server {
 	case types.DefaultUserServer, types.HiddenUserServer:
+		if settingTS.IsZero() {
+			settingTS = time.Now()
+		}
 		_, err = cli.SendMessage(context.TODO(), chat, &waE2E.Message{
 			ProtocolMessage: &waE2E.ProtocolMessage{
 				Type:                      waE2E.ProtocolMessage_EPHEMERAL_SETTING.Enum(),
